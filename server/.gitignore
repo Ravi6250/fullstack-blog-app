@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Environment Variables File
+# This is the most important line! It keeps your secrets safe.
+.env
+
+# Log files
+*.log
+npm-debug.log*
+
+# OS-generated files
+.DS_Store
+Thumbs.db
