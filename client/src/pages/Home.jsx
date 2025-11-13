@@ -1,33 +1,31 @@
-// client/src/pages/Home.jsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api';
 import PostCard from '../components/PostCard';
 import Loader from '../components/Loader';
-import Pagination from '../components/Pagination'; // <-- Import Pagination
+import Pagination from '../components/Pagination';
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // New state for pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  // New state for search functionality
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
 
-  // We wrap fetchPosts in useCallback to prevent it from being recreated on every render
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
-      // Pass page and search term as query parameters to the API
       const res = await api.get(`/posts?page=${currentPage}&search=${activeSearch}`);
       
-      setPosts(res.data.posts);
-      setTotalPages(res.data.totalPages);
+      // --- THIS IS THE FIX ---
+      // We now provide a fallback to an empty array `[]`.
+      // If `res.data.posts` is undefined or null, `posts` will be set to `[]` instead of crashing.
+      setPosts(res.data.posts || []);
+      
+      setTotalPages(res.data.totalPages || 0);
       setError(null);
     } catch (err) {
       console.error("Failed to fetch posts:", err);
@@ -35,16 +33,15 @@ const Home = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, activeSearch]); // This function will re-run if currentPage or activeSearch changes
+  }, [currentPage, activeSearch]);
 
-  // useEffect now calls the memoized fetchPosts function
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setCurrentPage(1); // Reset to first page on a new search
+    setCurrentPage(1);
     setActiveSearch(searchTerm);
   };
 
@@ -58,7 +55,6 @@ const Home = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-center mb-6 text-gray-800">Latest Posts</h1>
       
-      {/* Search Bar */}
       <form onSubmit={handleSearch} className="max-w-md mx-auto mb-12">
         <div className="relative">
           <input
@@ -66,11 +62,11 @@ const Home = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by title or author..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-full shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           />
           <button
             type="submit"
-            className="absolute inset-y-0 right-0 px-4 py-2 bg-blue-600 text-white font-semibold rounded-r-full hover:bg-blue-700"
+            className="absolute inset-y-0 right-0 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-r-full hover:bg-indigo-700"
           >
             Search
           </button>
@@ -96,7 +92,7 @@ const Home = () => {
         </>
       ) : (
         <p className="text-center text-gray-500 text-xl">
-          No posts found matching your search.
+          No posts found. Why not create the first one?
         </p>
       )}
     </div>

@@ -15,9 +15,15 @@ const MyPosts = () => {
       if (!user) return;
       try {
         const res = await api.get('/posts/my-posts');
-        setPosts(res.data);
+        
+        // --- THIS IS THE FIX ---
+        // We ensure that `posts` is always set to an array.
+        // If res.data is not an array (e.g., it's undefined), it will fall back to [].
+        setPosts(res.data || []);
+
       } catch (err) {
         console.error("Failed to fetch user posts:", err);
+        setPosts([]); // Also set to an empty array on error to be safe
       } finally {
         setLoading(false);
       }
